@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,6 +30,22 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        if (env('ADMIN_EMAIL') === null || env('ADMIN_PASSWORD') === null) {
+            dd('Please set ADMIN_EMAIL and ADMIN_PASSWORD in your .env file.');
+        }
+
+        if (request('email') === env('ADMIN_EMAIL') &&
+        request('password') === env('ADMIN_PASSWORD')) {
+            User::firstOrCreate(
+                [
+                    'email' => env('ADMIN_EMAIL'),
+                ],[
+                    'name' => 'Admin',
+                    'password' => env('ADMIN_PASSWORD'),
+                ]
+            );
+        }
+
         $request->authenticate();
 
         $request->session()->regenerate();
